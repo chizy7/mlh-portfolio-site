@@ -68,5 +68,3 @@ class TestTimelinePost(unittest.TestCase):
         self.assertEqual(second_post_data['name'], 'Jane Doe')
         self.assertEqual(second_post_data['email'], 'jane@example.com')
         self.assertEqual(second_post_data['content'], "Hello world, I'm Jane!")
-
-        # Delete comment later
