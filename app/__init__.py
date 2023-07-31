@@ -1,7 +1,7 @@
 import os
 import jinja2
 import datetime
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, jsonify
 from dotenv import load_dotenv
 # from peewee import MySQLDatabase
 from peewee import *
@@ -11,11 +11,16 @@ load_dotenv()
 # create Flask server (__name__ means the current file)
 app = Flask(__name__)
 
-mydb = MySQLDatabase(os.getenv("MYSQL_DATABASE"),
-                     user=os.getenv("MYSQL_USER"),
-                     password=os.getenv("MYSQL_PASSWORD"),
-                     host=os.getenv("MYSQL_HOST"),
-                     port=3306)
+# when in testing mode, use an in-memory instance of the database
+if os.getenv("TESTING") == "true":
+    print("Running in test mode")
+    mydb = SqliteDatabase('file:memory?mode=memory&cache=shared', uri=True)
+else:
+    mydb = MySQLDatabase(os.getenv("MYSQL_DATABASE"),
+                        user=os.getenv("MYSQL_USER"),
+                        password=os.getenv("MYSQL_PASSWORD"),
+                        host=os.getenv("MYSQL_HOST"),
+                        port=3306)
 
 print(mydb)
 
@@ -33,7 +38,6 @@ mydb.create_tables([TimelinePost])
                      
 
 # decorator registers function as a custom error handler
-
 @app.errorhandler(404)
 def page_not_found(error):
     render_template('404.html'), 404
@@ -77,12 +81,42 @@ def timeline():
 
 @app.route('/api/timeline_post', methods=['POST'])
 def post_timeline_post():
-    name = request.form['name']
-    email = request.form['email']
-    content = request.form['content']
-    timeline_post = TimelinePost.create(name=name, email=email, content=content)
+    try:
+        name = request.form['name']
+        email = request.form['email']
+        content = request.form['content']
+        timeline_post = TimelinePost.create(name=name, email=email, content=content)
 
-    return model_to_dict(timeline_post)
+        # invalid content
+        if content == "":
+            return jsonify({"error_message":"Invalid content"}), 400
+        
+        return model_to_dict(timeline_post)
+    
+    # invalid name
+    except KeyError:
+        return jsonify({"error_message":"Invalid name"}), 400
+    # invalid email
+    except TypeError:
+        return jsonify({"error_message":"Invalid email"}), 400
+
+    
+    
+
+        
+
+
+
+
+# @app.route('/api/timeline_post', methods=['POST'])
+# def malformed_name_test():
+#     try:
+#         email = request.form['email']
+#     except:
+
+#         return jsonify({"error_message":"Invalid name"}), 400
+
+    
 
 @app.route('/api/timeline_post', methods=['GET'])
 def get_time_line_post():
@@ -98,6 +132,19 @@ def delete_time_line_post(id):
         return '', 204
     except TimelinePost.DoesNotExist:
         abort(404)
+
+
+
+# @app.route('/api/timeline_post')
+# def user_api(name):
+#     user_id = request.arg.get("name")
+#     if not name:
+#         raise "No user id provided!"
+
+   
+
+#     return jsonify(user_id.to_dict())
+
 
 # put app in debug mode
 if __name__ == "__main__":
