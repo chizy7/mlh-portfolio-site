@@ -15,7 +15,6 @@ class TestTimelinePost(unittest.TestCase):
         # Bind model classes to test db
         test_db.bind(MODELS, bind_refs=False, bind_backrefs=False)
 
-
         test_db.connect()
         test_db.create_tables(MODELS)
     

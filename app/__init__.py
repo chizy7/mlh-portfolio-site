@@ -81,42 +81,21 @@ def timeline():
 
 @app.route('/api/timeline_post', methods=['POST'])
 def post_timeline_post():
-    try:
-        name = request.form['name']
-        email = request.form['email']
-        content = request.form['content']
-        timeline_post = TimelinePost.create(name=name, email=email, content=content)
 
-        # invalid content
-        if content == "":
-            return jsonify({"error_message":"Invalid content"}), 400
-        
-        return model_to_dict(timeline_post)
-    
-    # invalid name
-    except KeyError:
+    name = request.form.get('name')
+    email = request.form.get('email')
+    content = request.form.get('content')
+
+    if not name:
         return jsonify({"error_message":"Invalid name"}), 400
-    # invalid email
-    except TypeError:
+    if not email or '@' not in email:
         return jsonify({"error_message":"Invalid email"}), 400
+    if not content:
+        return jsonify({"error_message":"Invalid content"}), 400
 
-    
-    
+    timeline_post = TimelinePost.create(name=name, email=email, content=content)   
 
-        
-
-
-
-
-# @app.route('/api/timeline_post', methods=['POST'])
-# def malformed_name_test():
-#     try:
-#         email = request.form['email']
-#     except:
-
-#         return jsonify({"error_message":"Invalid name"}), 400
-
-    
+    return model_to_dict(timeline_post)
 
 @app.route('/api/timeline_post', methods=['GET'])
 def get_time_line_post():
@@ -132,19 +111,6 @@ def delete_time_line_post(id):
         return '', 204
     except TimelinePost.DoesNotExist:
         abort(404)
-
-
-
-# @app.route('/api/timeline_post')
-# def user_api(name):
-#     user_id = request.arg.get("name")
-#     if not name:
-#         raise "No user id provided!"
-
-   
-
-#     return jsonify(user_id.to_dict())
-
 
 # put app in debug mode
 if __name__ == "__main__":
