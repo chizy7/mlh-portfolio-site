@@ -57,7 +57,7 @@ class AppTestCase(unittest.TestCase):
 
         # POST request with malformed email
         response = self.client.post("/api/timeline_post", data={"name": "John Doe", "email": "invalid-email", "content": "Testing 1"})
-        # assert response.status_code == 400
+        assert response.status_code == 400
         html = response.get_data(as_text=True)
         assert "Invalid email" in html
 
